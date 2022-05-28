@@ -1,5 +1,5 @@
 # импортируем функцию listdir из модуля ОС
-from os import listdir    # для того, чтобы посмотреть, какие эксель файлы есть в папке
+from os import listdir  # для того, чтобы посмотреть, какие эксель файлы есть в папке
 from datetime import datetime  # импортируем из библиотеки datetime модуль datetime для работы с датой
 
 # импортируем модуль pandas, под псевдонимом pd, для работы с таблицей
@@ -9,9 +9,10 @@ import pandas as pd
 # файла config.yaml и превращается в словарь
 from settings import CONFIG
 
+
 # объявляем функцию find_excel_files, которая будет находить все excel файлы в нашей
 # папке проекта и возвращать кортеж найденных имен файлов
-def find_excel_files() -> tuple[str]: # функция будет возвращать кортеж строк
+def find_excel_files() -> tuple[str]:  # функция будет возвращать кортеж строк
     # объявляем список для найденных имен excel файлов
     excel_files = []
     # перебираем имена файлов в текущей папке
@@ -21,7 +22,7 @@ def find_excel_files() -> tuple[str]: # функция будет возвращ
         if file.endswith('.xlsx'):
             # если расширение xlsx есть, то мы добавляем эти имена файлов в список
             excel_files.append(file)
-    return tuple(excel_files) # превращаем полученный список в кортеж и возвращаем его
+    return tuple(excel_files)  # превращаем полученный список в кортеж и возвращаем его
 
 
 # DataFrame - таблица в Pandas
@@ -36,10 +37,11 @@ def read_excel(excel_files: tuple[str]) -> tuple[pd.DataFrame]:
             # пытаемся открыть необходимую книгу в файле и добавить в список
             frames.append(pd.read_excel(excel, sheet_name=CONFIG['sheetname']))
         # если листа не окажется произойдет ошибка, except уловит эту ошибку для предотвращения падения программы
-        except:
+        except Exception:
             pass
     # далее возвращаем кортеж таблиц (dataframe)
     return tuple(frames)  # превращает список таблиц (dataframe) в кортеж таблиц (dataframe) и возвращает его
+
 
 # В функции filter_excel осуществляем: фильтрацию таблиц, перебор  записей в таблице через цикл for,
 # проверку наличия дат  в колонке 'ГУ "НА"
@@ -64,7 +66,7 @@ def filter_excel(frames: tuple[pd.DataFrame]) -> pd.DataFrame:
             # перебираем записи из таблицы
             for row in frame.loc:
                 # проверяем наличие даты в колонке ГУ "НА"
-                if row[CONFIG['archive']] is not pd.NaT: # NaT - дата без даты из Pandas,
+                if row[CONFIG['archive']] is not pd.NaT:  # NaT - дата без даты из Pandas,
                     # Pandas воспринимает пустую ячейку в колонке дат как NaT, а не None
                     # проверяем наличие даты в колонке ИМНС и проверяем разницу лет между текущим годом
                     # и годом в этой колонке на >= 4
@@ -92,7 +94,7 @@ def filter_excel(frames: tuple[pd.DataFrame]) -> pd.DataFrame:
                         result[CONFIG['date']].append(datetime.strftime(row[CONFIG['date']].date(), '%d.%m.%Y'))
                         result[CONFIG['documents_count']].append(row[CONFIG['documents_count']])
                         result[CONFIG['package']].append(row[CONFIG['package']])
-        except:
+        except Exception:
             pass
     #     дописываем последнюю строку с общим количеством дел
     result[CONFIG['documents_count']].append(doc)
@@ -104,11 +106,12 @@ def filter_excel(frames: tuple[pd.DataFrame]) -> pd.DataFrame:
     # возвращаем полученный dataframe
     return result
 
+
 #  функция number_for_a_given_year осуществляет выборку данных по заданному году, перебирает все найденные листы,
 #  перебирает построчно и отбирает среди них строки с записями по интересующему году в колонке "Дата прекращения",
 #  формирует словарь, на основании которого создает dataframe,
 #  который функция write_result записывает уже в виде excel.
-def number_for_a_given_year(year: int, frames: tuple[pd.DataFrame]) -> pd.DataFrame:
+def filter_year(year: int, frames: tuple[pd.DataFrame]) -> pd.DataFrame:
     result = {
         CONFIG['registration_number']: [],
         CONFIG['documents_count']: [],
@@ -118,7 +121,7 @@ def number_for_a_given_year(year: int, frames: tuple[pd.DataFrame]) -> pd.DataFr
     doc = 0
     for frame in frames:
         try:
-            for row in frame.loc: # перебираем построчно таблицы
+            for row in frame.loc:  # перебираем построчно таблицы
                 # если в колонке "Дата прекращения" есть дата и она соответствует искомой, то добавляем в словарь
                 if row[CONFIG['date']] is not pd.NaT and row[CONFIG['date']].year == year:
                     # print(row)
@@ -129,7 +132,7 @@ def number_for_a_given_year(year: int, frames: tuple[pd.DataFrame]) -> pd.DataFr
                     result[CONFIG['package']].append(row[CONFIG['package']])
                     # подсчитываем количество документов
                     doc += row[CONFIG['documents_count']]
-        except:
+        except Exception:
             pass
     # заполняем последнюю строку с общим количеством документов
     result[CONFIG['registration_number']].append('')
@@ -177,7 +180,7 @@ def main():
         # меняем тип у года с строки на число
         year = int(year)
         # вызываем функцию фильтрации таблицы по году на оснвовании колонки "Дата прекращения"
-        res = number_for_a_given_year(year, frames)
+        res = filter_year(year, frames)
         # записываем получившуюся таблицу (dataframe) в excel
         write_result(res, f'за_{year}')
 
