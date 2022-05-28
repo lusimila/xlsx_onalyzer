@@ -7,6 +7,21 @@ XLSX tabular data analysis project
 * Selection of records by year
 * Фильтрация данных с генерацией новой таблицы
 * Data filtering with a new table generation
+
+## Virtual environment ##
+### Creating VENV ###
+Создание виртуального окружения
+
+    python -m venv venv
+### Activating VENV ###
+Активация виртуального окружения
+Windows:
+
+    .\venv\Scripts\activate
+
+Unix (MacOS & Linux):
+
+    source venv/bin/acitivate
 ***
 ## Installation  ##
 ***
