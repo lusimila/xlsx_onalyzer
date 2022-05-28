@@ -1,4 +1,5 @@
 *.xlsx
+!исходный файл1.xlsx
 /venv
 /.idea
 /__pycache__
